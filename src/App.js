@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { compose, withState, withProps } from 'recompose';
 import axios from 'axios';
+import isEqual from 'lodash.isequal';
 
 import PlaceBox from './PlaceBox'
 
@@ -71,7 +72,8 @@ const enhance = compose(
       },
       onClickPlaceItem: (index) => {
         const { setCollectPlaces, collectPlaces, place } = props;
-        setCollectPlaces([ ...collectPlaces, place[index] ]);
+        const filtered = collectPlaces.filter(p => (isEqual(p, place[index])) && true);
+        if (filtered.length === 0) setCollectPlaces([ ...collectPlaces, place[index] ]);
       }
     })
   ),

@@ -112,6 +112,7 @@ const savePlace = async (name, data) => {
       name,
       data
     });
+    console.log(result.data);
     return null;
 
   } catch (e) {
