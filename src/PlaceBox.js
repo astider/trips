@@ -203,7 +203,10 @@ const PlaceBox = (props) => {
                 </ImageContainer>
               }
               <Text>{p.name}</Text>
-              <LinkDiv>
+              <LinkDiv onClick={e => {
+                noEffectLink(e);
+                window.open(genLink(p), "_blank");
+              }}>
                 <Anchor onClick={e => noEffectLink(e)} href={genLink(p)} target="_blank">
                   >
                 </Anchor>
