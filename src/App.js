@@ -3,19 +3,21 @@ import styled from 'styled-components';
 import { compose, withState, withProps } from 'recompose';
 import axios from 'axios';
 
+import PlaceBox from './PlaceBox'
+
 const searchPlace = async (query) => {
-  const response = await axios.get(`https://us-central1-whatismlkit.cloudfunctions.net/searchPlace?place=${query}`);
+  const searchPlaceURL = 'https://us-central1-whatismlkit.cloudfunctions.net/searchPlace?place=';
+  const response = await axios.get(searchPlaceURL + query);
   return response.data.results;
 }
 
-const getImage = async (ref) => {
-  
-}
-
 const Container = styled.div`
-  padding: 64px 16px;
+  padding: 8px 16px;
   height: 100%;
   background-color: #ffffff;
+  @media(max-width: 720px) {
+    padding: 8px 8px;
+  }
 `;
 
 const Title = styled.h2`
@@ -47,24 +49,6 @@ const Submit = styled.button`
   color: #ffffff; 
   border: none;
   outline: none;
-`;
-
-const PlaceContainer = InputContainer.extend`
-  ${props => props.loading && 'content: "loading";'}
-  padding: 8px;
-`;
-
-const PlaceInfo = styled.div`
-  border: 1px solid #d8d8d8;
-  border-radius: 6px;
-`;
-
-const PlaceItem = styled.div`
-  cursor: pointer;
-  padding: 2px 8px;
-  &:hover {
-    background-color: #e4e4e4;
-  }
 `;
 
 const enhance = compose(
@@ -105,32 +89,15 @@ const App = (props) => {
         </form>
       </InputContainer>
       <Title>Saved Places:</Title>
-      <PlaceContainer>
-        {collectPlaces.length === 0 && <PlaceItem>No Place saved</PlaceItem>}
-        {collectPlaces.length > 0 && 
-          <PlaceInfo>
-            {collectPlaces.map((p, index) =>
-              <PlaceItem key={index}>
-                <p>{p.name}</p>
-              </PlaceItem>
-            )}
-          </PlaceInfo>
-        }
-      </PlaceContainer>
+      <PlaceBox places={collectPlaces} placeHolder="No saved places" saveable />
       <Title>Search Results:</Title>
-      <PlaceContainer>
-        {placeLoading && 'Loading นะจ๊ะ'}
-        {(!placeLoading && place.length === 0) && <PlaceItem>No result to be shown</PlaceItem>}
-        {place.length > 0 && 
-          <PlaceInfo>
-            {place.map((p, index) =>
-              <PlaceItem key={index} onClick={() => onClickPlaceItem(index)}>
-                <p>{p.name}</p>
-              </PlaceItem>
-            )}
-          </PlaceInfo>
-        }
-      </PlaceContainer>
+      <PlaceBox
+        placeHolder="No result to be shown"
+        places={place}
+        handleClick={onClickPlaceItem}
+        withLoading
+        loading={placeLoading}
+      />
     </Container>
   );
 };

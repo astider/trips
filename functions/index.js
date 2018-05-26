@@ -7,6 +7,7 @@ const cors = require('cors')({
 
 admin.initializeApp();
 
+const db = admin.firestore();
 const capi = functions.https.onRequest;
 
 exports.sample = capi((req, res) => {
@@ -19,6 +20,39 @@ exports.sample = capi((req, res) => {
   })
 });
 
+exports.savePlace = capi((req, res) => {
+  cors(req, res, () => {
+    const name = req.body.name;
+    const data = req.body.data;
+    db.collection('save')
+    .doc(name).set(data)
+    .then(docRef => {
+      id = docRef.id
+      console.log('save to id: ', id);
+      return res.json({ error: null })
+    })
+    .catch(error => {
+      return res.json({ error })
+    })
+  })
+})
+
+exports.loadPlace = capi((req, res) => {
+  cors(req, res, () => {
+    const name = req.query.name;
+    db.doc('save' + name).get()
+    .then(snap => {
+      const data = snap.data();
+      console.log('get snap: ' + id);
+      console.log('data', data);
+      return res.json({ error: null, data })
+    })
+    .catch(error => {
+      return res.json({ error })
+    })
+  })
+})
+
 exports.searchPlace = capi((req, res) => {
   cors(req, res, () => {
     const query = req.query.place;
@@ -27,6 +61,26 @@ exports.searchPlace = capi((req, res) => {
     .then(data => {
       console.log(data);
       return res.status(200).json(data.data);
+    })
+    .catch(error => {
+      return res.status(500).json(error)
+    })
+  })
+})
+
+exports.searchImage = capi((req, res) => {
+  cors(req, res, () => {
+    const query = 'photoreference=' + req.query.ref + '&maxwidth=' + req.query.width;
+    const imgSearchURL = 'https://maps.googleapis.com/maps/api/place/photo?key=AIzaSyDflsDUpu_e7MRMMaWA3o1oEvvHuu7TA2M&' + query;
+    console.log(imgSearchURL);
+    axios({
+      method: 'GET',
+      url: imgSearchURL,
+    })
+    .then(data => {
+      console.log(Object.keys(data.request._redirectable._redirects));
+      console.log(data.request._redirectable._currentUrl);
+      return res.status(200).json({ src: data.request._redirectable._currentUrl });
     })
     .catch(error => {
       return res.status(500).json(error)
