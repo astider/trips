@@ -1,8 +1,9 @@
 import React from 'react';
 import styled from 'styled-components';
-import { compose, withState, withProps } from 'recompose';
+import { compose, withState, withProps, lifecycle } from 'recompose';
 import axios from 'axios';
 import isEqual from 'lodash.isequal';
+import qs from 'querystring';
 
 import PlaceBox from './PlaceBox'
 
@@ -77,10 +78,25 @@ const enhance = compose(
       }
     })
   ),
+  lifecycle({
+    async componentDidMount() {
+      const queryWithoutQuestion = window.location.search.replace('?','')
+      const { name } = qs.parse(queryWithoutQuestion);
+      if (name && name.length > 0) {
+        const loadUrl = 'https://us-central1-whatismlkit.cloudfunctions.net/loadPlace?name=' + name;
+        const response = await axios.get(loadUrl);
+        const data = response.data.data;
+        const formattedData = Object.keys(data).map(k => ({ ...data[k] }));
+        this.props.setCollectPlaces(formattedData)
+      }
+    }
+  })
 );
  
 const App = (props) => {
   const { searchText, onTextChange, onSubmitSearch, placeLoading, place, onClickPlaceItem, collectPlaces } = props;
+  const queryWithoutQuestion = window.location.search.replace('?','')
+  const { name } = qs.parse(queryWithoutQuestion);
   return (
     <Container>
       <Title>Enter Place name:</Title>
@@ -91,7 +107,7 @@ const App = (props) => {
         </form>
       </InputContainer>
       <Title>Saved Places:</Title>
-      <PlaceBox places={collectPlaces} placeHolder="No saved places" saveable />
+      <PlaceBox places={collectPlaces} placeHolder="No saved places" name={name} saveable />
       <Title>Search Results:</Title>
       <PlaceBox
         placeHolder="No result to be shown"

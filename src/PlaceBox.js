@@ -57,30 +57,47 @@ const PlaceItem = styled.div`
 `;
 
 const Text = styled.p`
+  font-size: 15px;
+  margin: auto 0;
+  padding: 0 8px;
+  text-align: center;
+  max-width: 160px;
+  @media(max-width: 720px) {
+    max-width: 128px;
+  }
 `;
 
 const LinkDiv = styled.div`
   border-bottom: 1px #d8d8d8;
   margin: auto 16px auto;
-  width: 24px;
-  height: 24px;
-  line-height: 24px;
-  background-color: #4885ed;
+  width: 56px;
+  height: 56px;
+  line-height: 56px;
+  font-size: 32px;
   text-align: center;
   border-radius: 50%;
   -moz-border-radius: 50%;
   -webkit-border-radius: 50%;
-`;
 
-const Anchor = styled.a`
-  font-weight: 700;
-  text-decoration: none;
-  color: white;
-  padding-left: 2px;
+  background: url(${require('./images/maps-logo.png')}) no-repeat 8px center;
+  background-size: 40px;
+
+  &:hover {
+    background-color: #4885ed;
+  }
+
+  @media(max-width: 720px) {
+    border-radius: 6px;
+    margin: auto 0;
+    font-size: 16px;
+  }
 `;
 
 const ImageContainer = styled.div`
   width: 200px;
+  @media(max-width: 720px) {
+    max-width: 128px;
+  }
 `;
 
 const Image = styled.img`
@@ -88,6 +105,7 @@ const Image = styled.img`
   max-width: 160px;
   height: auto;
   border-radius: 6px;
+  
 `;
 
 const getImgSrc = async (place, maxWidth) => {
@@ -126,7 +144,7 @@ const noEffectLink = (e) => {
 }
 
 const enhance = compose(
-  withState('name', 'setName', ''),
+  withState('name', 'setName', props => props.name),
   withState('imgSrc', 'setImgSrc', []),
   withState('saveStatus', 'setSaveStatus', false),
   withProps(
@@ -141,7 +159,7 @@ const enhance = compose(
               place_id: next.place_id,
               name: next.name,
               geometry: next.geometry,
-              img: imgSrc[i]
+              img: next.img || imgSrc[i]
             };
             return prev;
           }, {});
@@ -157,11 +175,13 @@ const enhance = compose(
     componentWillReceiveProps(nextProps) {
       const oldPlaces = this.props.places;
       const newPlaces = nextProps.places;
-      if (oldPlaces !== newPlaces && newPlaces.length > 0) {
+      if (oldPlaces !== newPlaces && newPlaces.length > 0 ) {
         Promise.all(
           newPlaces.map(async (p) => {
-            const url = await getImgSrc(p, 500);
-            return url
+            if (p.photos && p.photos.length > 0) {
+              const url = await getImgSrc(p, 500);
+              return url;
+            } else return '';
           })
         )
         .then(urls => {
@@ -169,7 +189,7 @@ const enhance = compose(
         })
         .catch(error => console.log('error will recieve props', error))
       }
-    }
+    },
   })
 );
 
@@ -198,9 +218,9 @@ const PlaceBox = (props) => {
               if (handleClick)
                 handleClick(index)
             }}>
-              {p.photos.length > 0 &&
+              {(p.img || (p.photos && p.photos.length > 0)) &&
                 <ImageContainer>
-                  <Image src={imgSrc[index]} />
+                  <Image src={p.img || imgSrc[index]} />
                 </ImageContainer>
               }
               <Text>{p.name}</Text>
@@ -208,9 +228,6 @@ const PlaceBox = (props) => {
                 noEffectLink(e);
                 window.open(genLink(p), "_blank");
               }}>
-                <Anchor onClick={e => noEffectLink(e)} href={genLink(p)} target="_blank">
-                  >
-                </Anchor>
               </LinkDiv>
             </PlaceItem>
           )}

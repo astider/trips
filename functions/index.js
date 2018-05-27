@@ -40,12 +40,16 @@ exports.savePlace = capi((req, res) => {
 exports.loadPlace = capi((req, res) => {
   cors(req, res, () => {
     const name = req.query.name;
-    db.doc('save' + name).get()
+    db.collection('save')
+    .doc(name).get()
     .then(snap => {
-      const data = snap.data();
-      console.log('get snap: ' + id);
-      console.log('data', data);
-      return res.json({ error: null, data })
+      if (!snap.exists) return res.json({ error: 'document not exists' });
+      else {
+        console.log(JSON.stringify(snap));
+        const data = snap.data();
+        console.log('data', data);
+        return res.json({ error: null, data })
+      }
     })
     .catch(error => {
       return res.json({ error })
