@@ -2,7 +2,7 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const axios = require('axios');
 const cors = require('cors')({
-  origin: ['http://localhost:3000', 'https://whatismlkit.firebaseapp.com']
+  origin: ['http://localhost:3000', 'https://whatismlkit.firebaseapp.com', 'https://places.astider.reviews']
 })
 
 admin.initializeApp();
